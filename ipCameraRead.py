@@ -1,8 +1,8 @@
 import cv2
 import time
 from datetime import datetime, timedelta
-# Input parameter: Local folder for saving video clips
-output_folder = r"C:\videoClipTest"  # Replace with the desired folder path
+from DetectHardrive import scan_hardrive
+from DetectEthConnection import check_eth_port
 
 # IP Camera configuration
 ip_address = "192.168.1.108"  # Replace with your IP camera's IP address
@@ -28,7 +28,7 @@ cap = cv2.VideoCapture(stream_url)
 if not cap.isOpened():
     print("Error: Could not open video stream.")
     exit()
-
+                                
 def get_next_clip_time():
     """Calculate the next time to start a new clip at the beginning of the hour or at 30 minutes past."""
     now = datetime.now()
@@ -38,6 +38,16 @@ def get_next_clip_time():
     else:
         next_clip = (now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
     return next_clip
+# Input parameter: Local folder for saving video clips
+
+while True:
+    
+    output_folder = scan_hardrive()
+    eth_port_flag,ping_flag = check_eth_port(ip_address)
+    if output_folder is not None and eth_port_flag and ping_flag:
+        break
+    time.sleep(1)
+
 
 try:
     while True:
@@ -53,7 +63,6 @@ try:
                 out.write(frame)
             else:
                 break
-        
         # Release the video writer for the current clip
         out.release()
 
